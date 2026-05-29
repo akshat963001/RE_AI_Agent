@@ -11,14 +11,11 @@ Response actions:
 """
 
 import json
-from openai import OpenAI
-from config import DEEPSEEK_API_KEY, DEEPSEEK_MODEL
+import anthropic
+from config import ANTHROPIC_API_KEY, ANTHROPIC_MODEL
 from pricing import pricing_context
 
-client = OpenAI(
-    api_key=DEEPSEEK_API_KEY,
-    base_url="https://api.deepseek.com",
-)
+client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 _SYSTEM_PROMPT_BASE = """You are a professional real estate negotiation agent representing a BUYER in Dubai. You communicate only in English.
 
@@ -173,19 +170,23 @@ def get_ai_response(
     """
     system_prompt = _build_system_prompt(building_name, br_type, asking_psf, area_sqft)
 
-    messages = [{"role": "system", "content": system_prompt}]
-    messages.extend(conversation_history)
+    # Anthropic: system is a separate param — messages must be user/assistant only
+    messages = list(conversation_history)
     messages.append({"role": "user", "content": new_message})
 
     try:
-        response = client.chat.completions.create(
-            model=DEEPSEEK_MODEL,
+        response = client.messages.create(
+            model=ANTHROPIC_MODEL,
+            system=system_prompt,
             messages=messages,
             temperature=0.65,
             max_tokens=800,
-            response_format={"type": "json_object"},
         )
-        raw = response.choices[0].message.content
+        # Use prefilled "{" to encourage JSON — extract full response text
+        raw = response.content[0].text.strip()
+        # Ensure we only parse the JSON object
+        if not raw.startswith("{"):
+            raw = raw[raw.index("{"):]
         result = json.loads(raw)
 
     except json.JSONDecodeError as e:

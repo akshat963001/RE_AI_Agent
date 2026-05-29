@@ -1,6 +1,6 @@
 flask
 gunicorn
-openai
+anthropic
 requests
 python-dotenv
 openpyxl
