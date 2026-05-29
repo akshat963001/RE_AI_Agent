@@ -11,6 +11,7 @@ from database import (
     increment_escalation_count,
     get_all_leads,
     is_blocked,
+    reset_lead,
 )
 from negotiation_agent import get_ai_response
 from whatsapp_client import send_message, send_escalation_alert
@@ -280,6 +281,14 @@ def takeover_lead(phone):
 def close_lead(phone):
     update_lead(phone, status="closed")
     return jsonify({"status": "ok", "phone": phone, "mode": "closed"}), 200
+
+
+@app.route("/reset/<phone>", methods=["POST"])
+def reset_lead_endpoint(phone):
+    """Wipe all history and lead data for a number — complete fresh start."""
+    reset_lead(phone)
+    print(f"[Reset] Fresh start for {phone}")
+    return jsonify({"status": "ok", "phone": phone, "mode": "reset"}), 200
 
 
 @app.route("/health", methods=["GET"])

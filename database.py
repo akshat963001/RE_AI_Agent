@@ -125,6 +125,17 @@ def get_all_leads() -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def reset_lead(phone: str):
+    """Delete all messages and lead record for a phone number — fresh start."""
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute("DELETE FROM messages WHERE phone = ?", (phone,))
+    c.execute("DELETE FROM leads WHERE phone = ?", (phone,))
+    conn.commit()
+    conn.close()
+    print(f"[DB] Reset complete for {phone}")
+
+
 def is_blocked(phone: str) -> bool:
     """Returns True if the lead is blacklisted or discarded — no reply should be sent."""
     lead = get_lead(phone)
