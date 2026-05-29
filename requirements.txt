@@ -4,3 +4,4 @@ openai
 requests
 python-dotenv
 openpyxl
+beautifulsoup4

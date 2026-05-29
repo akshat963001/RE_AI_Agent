@@ -15,6 +15,7 @@ from database import (
 from negotiation_agent import get_ai_response
 from whatsapp_client import send_message, send_escalation_alert
 from pricing import load_pricing_data
+from link_fetcher import extract_bayut_urls, fetch_bayut_listing, format_for_ai
 
 app = Flask(__name__)
 
@@ -92,9 +93,38 @@ def receive_message():
         if history and history[-1]["content"] == incoming_text:
             history = history[:-1]
 
+        # ── Bayut link detection + property data extraction ───────────────────
+        ai_input_text = incoming_text
+        bayut_urls = extract_bayut_urls(incoming_text)
+        if bayut_urls:
+            prop = fetch_bayut_listing(bayut_urls[0])
+            if prop:
+                print(f"[Fetcher] Extracted listing: {prop.get('title')} | AED {prop.get('price_aed')}")
+                ai_input_text = (
+                    f"{incoming_text}\n\n"
+                    f"{format_for_ai(prop)}"
+                )
+                # Auto-populate pricing fields from listing if not already known
+                if not asking_psf and prop.get("price_aed") and prop.get("area_sqft"):
+                    asking_psf = round(prop["price_aed"] / prop["area_sqft"], 2)
+                if not area_sqft and prop.get("area_sqft"):
+                    area_sqft = prop["area_sqft"]
+                if not building_name and prop.get("project"):
+                    building_name = prop["project"]
+                if not br_type and prop.get("bedrooms") is not None:
+                    br_type = "2br" if int(prop["bedrooms"]) >= 2 else "1br"
+            else:
+                print(f"[Fetcher] Could not extract listing from {bayut_urls[0]}")
+                ai_input_text = (
+                    f"{incoming_text}\n\n"
+                    f"[NOTE: A Bayut link was shared but could not be accessed. "
+                    f"Ask the agent to share the key details manually: "
+                    f"project name, area in sqft, asking price, floor, and furnishing status.]"
+                )
+
         # ── Get AI response ───────────────────────────────────────────────────
         ai = get_ai_response(
-            history, incoming_text,
+            history, ai_input_text,
             building_name=building_name,
             br_type=br_type,
             asking_psf=asking_psf,
