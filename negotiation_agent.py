@@ -117,7 +117,7 @@ DEFAULT → action: continue
 ────────────────────────────────────────
 RESPONSE FORMAT  — valid JSON only, no markdown, no extra text
 ────────────────────────────────────────
-{
+{{
   "reply": "exact message to send (empty string if action is discard)",
   "action": "continue | notify | pause | reject | discard | blacklist",
   "notification_reason": null,
@@ -128,7 +128,7 @@ RESPONSE FORMAT  — valid JSON only, no markdown, no extra text
   "asking_psf": null,
   "area_sqft": null,
   "notes": "internal note for buyer's records — not sent to seller"
-}
+}}
 
 Field rules
   reply               — conversational, ends with a question or clear next step; empty string for discard
