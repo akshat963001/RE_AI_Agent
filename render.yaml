@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: RE_AI_Agent
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --timeout 60 --bind 0.0.0.0:$PORT
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: VERIFY_TOKEN
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: OWNER_PHONE_NUMBER
+        sync: false
+      - key: DB_PATH
+        value: /tmp/re_agent.db
