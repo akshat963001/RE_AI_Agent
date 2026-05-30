@@ -210,10 +210,16 @@ def get_ai_response(
     try:
         response = client.messages.create(
             model=ANTHROPIC_MODEL,
-            system=system_prompt,
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},  # cache prompt — 10% cost on repeat calls
+                }
+            ],
             messages=messages,
             temperature=0.65,
-            max_tokens=800,
+            max_tokens=400,
         )
         # Use prefilled "{" to encourage JSON — extract full response text
         raw = response.content[0].text.strip()

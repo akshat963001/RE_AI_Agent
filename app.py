@@ -90,7 +90,7 @@ def receive_message():
         area_sqft     = lead.get("area_sqft") or None
 
         # ── Fetch conversation history (minus the message just saved) ─────────
-        history = get_conversation(lead_phone, limit=20)
+        history = get_conversation(lead_phone, limit=10)
         if history and history[-1]["content"] == incoming_text:
             history = history[:-1]
 
