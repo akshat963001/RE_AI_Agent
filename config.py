@@ -16,5 +16,8 @@ ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 # e.g. "919876543210" for India
 OWNER_PHONE_NUMBER = os.environ.get("OWNER_PHONE_NUMBER")
 
+# ScraperAPI — handles CAPTCHA and bot detection for Bayut fetching
+SCRAPER_API_KEY = os.environ.get("SCRAPER_API_KEY")
+
 # SQLite DB path — /tmp persists within a Render session
 DB_PATH = os.environ.get("DB_PATH", "/tmp/re_agent.db")

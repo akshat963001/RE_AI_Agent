@@ -12,6 +12,7 @@ import re
 import json
 import requests
 from bs4 import BeautifulSoup
+from config import SCRAPER_API_KEY
 
 HEADERS = {
     "User-Agent": (
@@ -22,6 +23,8 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
+
+SCRAPER_API_URL = "http://api.scraperapi.com"
 
 BAYUT_PATTERN = re.compile(
     r"https?://(?:www\.)?bayut\.com/(?:property/details-\d+\.html|[^\s]+)",
@@ -50,7 +53,17 @@ def extract_bayut_urls(text: str) -> list[str]:
 
 def _fetch_html(url: str) -> str | None:
     try:
-        r = requests.get(url, headers=HEADERS, timeout=15, allow_redirects=True)
+        if SCRAPER_API_KEY:
+            # Route through ScraperAPI to bypass CAPTCHA / bot detection
+            params = {
+                "api_key": SCRAPER_API_KEY,
+                "url": url,
+                "render": "false",   # JS rendering off — Bayut embeds data in __NEXT_DATA__
+            }
+            r = requests.get(SCRAPER_API_URL, params=params, timeout=30)
+        else:
+            r = requests.get(url, headers=HEADERS, timeout=15, allow_redirects=True)
+
         if r.status_code == 200:
             return r.text
         print(f"[Fetcher] HTTP {r.status_code} for {url}")
